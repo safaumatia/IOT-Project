@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pulse Monitoring Dashboard</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.socket.io/4.5.3/socket.io.min.js"></script>
+</head>
+<body>
+    <h1>Pulse Monitoring Dashboard</h1>
+    <canvas id="bpmChart" width="400" height="200"></canvas>
+
+    <script>
+        const socket = io();
+        // Initialize chart
+        const ctx = document.getElementById('bpmChart').getContext('2d');
+        const chartData = {
+            labels: [],
+            datasets: [{
+                label: 'BPM',
+                data: [],
+                borderColor: 'rgba(75, 192, 192, 1)',
+                backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                fill: true,
+            }]
+        };
+
+        const bpmChart = new Chart(ctx, {
+            type: 'line',
+            data: chartData,
+            options: {
+                scales: {
+                    x: {
+                        title: { display: true, text: 'Time' }
+                    },
+                    y: {
+                        title: { display: true, text: 'BPM' },
+                        beginAtZero: false
+                    }
+                }
+            }
+        });
+
+        // Handle new data from server
+        socket.on('new_data', function(newData) {
+            bpmChart.data.labels.push(newData.time);
+            bpmChart.data.datasets[0].data.push(newData.bpm);
+
+            // Update chart
+            bpmChart.update();
+        });
+    </script>
+</body>
+</html>
